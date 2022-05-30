@@ -13,20 +13,20 @@ Double_t H1_PY;          Double_t H2_PY;           Double_t H3_PY;
 Double_t H1_PZ;          Double_t H2_PZ;           Double_t H3_PZ;
 Double_t H1_ProbPi;      Double_t H2_ProbPi;       Double_t H3_ProbPi;
 Double_t H1_ProbK;       Double_t H2_ProbK;        Double_t H3_ProbK;
+int nentries, nbytes, i;  FILE *fp;
 
-//--------- OTHER DECLARATIONS AND DEFINITIONS
+//--------- LITERATURE MASSES
 double B_m  = 5279.38;   // B meson mass in MeV
 double Pi_m = 139.57039; // MeV
 double K_m  = 493.677;   // MeV
 double D0m  = 1864.84;   // MeV
-int nentries, nbytes, i;  FILE *fp;
 
 //--------- ADAPTATIVE BINNING OBJECTS
 struct Bin{
     bool binOn = false;
     double xmin = 0.0, xmax = 0.0, ymin = 0.0, ymax = 0.0;
 };
-vector<Bin> vecBin(200);
+vector<Bin> vecBin(500);
 
 void setBin(int i, bool Active,double x, double X, double y, double Y){
     vecBin[i].binOn = Active;
@@ -36,7 +36,7 @@ void setBin(int i, bool Active,double x, double X, double y, double Y){
 
 //--------- CONTROL PANEL
 double D0_thresh  = 30.;      double B_thresh   = 60.;   // D0 exclusion and B mass window thresholds
-double above_this = 0.8;      double below_this = 0.4;   // PARTICLE ID EXCLUSION
+double above_this = 0.75;     double below_this = 0.45;   // PARTICLE ID EXCLUSION
 double H1_pi = below_this;    double H1_ka = above_this;
 
 
@@ -68,9 +68,9 @@ void func(TLorentzVector Pion, TLorentzVector Kaon1, TLorentzVector Kaon2, int a
     double Mka = (Kaon1 + Kaon2).M();
     double PT = (Pion + Kaon1 + Kaon2).Pt();
     double Bmass = (Pion + Kaon1 + Kaon2).M(); h_Bmass_raw->Fill(Bmass,1);
-    if(Bmass < B_m + arrayEnt && Bmass > B_m - arrayEnt) {
+    if(Bmass < B_m + arrayEnt && Bmass > B_m - arrayEnt) {  // B mass window
         if(PT > 1700) {
-            if( (Mpi < D0m - D0_thresh || Mpi > D0m + D0_thresh) && (Mka < D0m - D0_thresh || Mka > D0m + D0_thresh) ){
+            if( (Mpi < D0m - D0_thresh || Mpi > D0m + D0_thresh) && (Mka < D0m - D0_thresh || Mka > D0m + D0_thresh) ){ // D0 exclusion
                 if(H1_Charge == -1){ //------------ B+ CASE
                     h_Mpi_plus->Fill(Mpi,1);
                     h_Mka_plus->Fill(Mka,1);
@@ -97,8 +97,7 @@ void func(TLorentzVector Pion, TLorentzVector Kaon1, TLorentzVector Kaon2, int a
 }
 
 
-
-void KKp_gen(){
+void cKKp_gen(){
 
   B2HHH->Add("data/B2HHH_MagnetUp.root");                            B2HHH->Add("data/B2HHH_MagnetDown.root");
   B2HHH->SetBranchAddress("B_FlightDistance", &B_FlightDistance);    B2HHH->SetBranchAddress("B_VertexChi2", &B_VertexChi2);
@@ -113,9 +112,10 @@ void KKp_gen(){
   nentries = (Int_t)B2HHH->GetEntries();
   fp = fopen("KKP.csv","w"); // Creating a CSV to write data
 
-  int B_window[]={40,45,50,55,60,65,70};
+  int B_window[]={40,45,50,55,60};
 
   for(int ii = 0; ii< size(B_window); ++ii){
+
     for (i = 0; i < nentries; i++)
     {
         nbytes = B2HHH->GetEntry(i);
@@ -146,16 +146,27 @@ void KKp_gen(){
     // -------------------------------------------------------------------------- PLOT
     auto canvas = new TCanvas("canvas","canvas",1000,700);
 
-    h_MkaSQ_plus->SetTitle(Form("Probs: %.1f-%.1f | B window: #pm%i MeV", above_this, below_this, B_window[ii]));
+    h_MkaSQ_plus->SetTitle(Form("Probs: %.2f-%.2f | B window: #pm%i MeV", above_this, below_this, B_window[ii]));
     h_MkaSQ_plus->SetLineWidth(2);  h_MkaSQ_plus->Draw("hist e");
     h_MkaSQ_minus->SetLineWidth(2); h_MkaSQ_minus->Draw("samehist e");
     h_MkaSQ_minus->SetLineColor(1);
     TLegend *leg = new TLegend(0.7,0.6,0.9,0.75);
     leg->AddEntry(h_MkaSQ_plus, "B+", "l"); leg->AddEntry(h_MkaSQ_minus, "B-", "l"); leg->Draw();
     // canvas->Print(Form("KKP_plots/KKP_focusAsym_Probs%.1f-%.1f_B%i.png", above_this, below_this, B_window[ii]),"Title: ");
-    canvas->SaveAs(Form("KKP_plots/KKP_focusAsym_Probs%.1f-%.1f_B%i.png", above_this, below_this, B_window[ii]));
+    canvas->SaveAs(Form("KKP_plots/KKP_focusAsym_Probs%.2f-%.2f_B%i.png", above_this, below_this, B_window[ii]));
+
+
+    // -------------------------------------------------------------------------- RESETTING HISTOGRAMS
+    whole->Reset("ICESM");         h_PT->Reset("ICESM");
+    h_Bmass_raw->Reset("ICESM");   h_Bmass->Reset("ICESM");
+    h_Bplus->Reset("ICESM");       h_Bminus->Reset("ICESM");
+    h_Mpi_plus->Reset("ICESM");    h_Mpi_minus->Reset("ICESM");
+    h_MpiSQ_plus->Reset("ICESM");  h_MpiSQ_minus->Reset("ICESM");
+    h_Mka_plus->Reset("ICESM");    h_Mka_minus->Reset("ICESM");
+    h_MkaSQ_plus->Reset("ICESM");  h_MkaSQ_minus->Reset("ICESM");
+
   }
 
   fclose(fp);   fp = 0;   // Closing the CSV
-
+  vecBin.clear();         // Clearing vector
 }

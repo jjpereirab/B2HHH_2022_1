@@ -35,8 +35,8 @@ void setBin(int i, bool Active,double x, double X, double y, double Y){
 }
 
 //--------- CONTROL PANEL
-double D0_thresh  = 30.;      double B_thresh   = 60.;   // D0 exclusion and B mass window thresholds
-double above_this = 0.8;      double below_this = 0.4;   // PARTICLE ID EXCLUSION
+double D0_thresh  = 30.;      double B_thresh   = 45.;   // D0 exclusion and B mass window thresholds
+double above_this = 0.75;      double below_this = 0.3;   // PARTICLE ID EXCLUSION
 double H1_pi = below_this;    double H1_ka = above_this;
 
 
@@ -45,21 +45,20 @@ int dpxbins = 14;   int dpybins = 14;     //-------- DALITZ PLOT BINS
 int infl    = 500;  int supl    = 6000;   //-------- range for normal dalitz plots
 
 TH2F *whole         = new TH2F("whole","whole sym; Mka^{2}; Mpi^{2}",dpxbins,0,35, dpybins, 0, 35);
-
 TH1F *h_Bmass_raw   = new TH1F("h_Bmass_raw","Bmass; m(MeV); Events",60,5000,5500);
 TH1F *h_Bmass       = new TH1F("h_Bmass","Bmass; m(MeV); Events",60,5000,5500);
 TH1F *h_PT          = new TH1F("h_PT","h_PT ; Pt(MeV); Events",60,1000,8000);
-TH1F *h_Mpi_plus    = new TH1F("h_Mpi_plus","Mpi ; m(MeV); Events",60,infl,supl);
-TH1F *h_Mka_plus    = new TH1F("h_Mka_plus","Mka ; m(MeV); Events",60,infl,supl);
-TH1F *h_Mpi_minus   = new TH1F("h_Mpi_minus","Mpi minus; m(MeV); Events",60,infl,supl);
-TH1F *h_Mka_minus   = new TH1F("h_Mka_minus","Mka minus; m(MeV); Events",60,infl,supl);
 
-TH2F *h_Bplus       = new TH2F("h_Bplus","B^{+}; Mka^{2}; Mpi^{2}",dpxbins,0,35, dpybins, 0, 35);
-TH1F *h_MpiSQ_plus  = new TH1F("h_Mpi_plus","Mpi^{2} ; m^{2}(GeV^{2}); Events",60,0,35);
-TH2F *h_Bminus      = new TH2F("h_Bminus","B^{-}; Mka^{2}; Mpi^{2}",dpxbins,0,35, dpybins, 0, 35);
-TH1F *h_MpiSQ_minus = new TH1F("h_Mpi_minus","Mpi minus; m^{2}(GeV^{2}); Events",60,0,35);
-TH1F *h_MkaSQ_plus  = new TH1F("h_Mka_plus","Mka^{2} ; m^{2}(GeV^{2}); Events",20,0.8,2.8);
-TH1F *h_MkaSQ_minus = new TH1F("h_Mka_minus","Mka minus; m^{2}(GeV^{2}); Events",20,0.8,2.8);
+TH2F *h_Bplus       = new TH2F("h_Bplus"    ,"B^{+}; Mka^{2}; Mpi^{2}",dpxbins,0,35, dpybins, 0, 35);
+TH2F *h_Bminus      = new TH2F("h_Bminus"   ,"B^{-}; Mka^{2}; Mpi^{2}",dpxbins,0,35, dpybins, 0, 35);
+TH1F *h_Mpi_plus    = new TH1F("h_Mpi_plus" ,"Mpi ; m(MeV); Events",60,infl,supl);
+TH1F *h_Mpi_minus   = new TH1F("h_Mpi_minus","Mpi minus; m(MeV); Events",60,infl,supl);
+TH1F *h_MpiSQ_plus  = new TH1F("h_MpiSQ_plus" ,"Mpi^{2} ; m^{2}(GeV^{2}); Events",60,0,35);
+TH1F *h_MpiSQ_minus = new TH1F("h_MpiSQ_minus","Mpi minus; m^{2}(GeV^{2}); Events",60,0,35);
+TH1F *h_Mka_plus    = new TH1F("h_Mka_plus" ,"Mka ; m(MeV); Events",60,infl,supl);
+TH1F *h_Mka_minus   = new TH1F("h_Mka_minus","Mka minus; m(MeV); Events",60,infl,supl);
+TH1F *h_MkaSQ_plus  = new TH1F("h_MkaSQ_plus" ,"Mka^{2} ; m_{KK}^{2}(GeV^{2}); Events",20,0.8,2.8);
+TH1F *h_MkaSQ_minus = new TH1F("h_MkaSQ_minus","Mka minus; m_{KK}^{2}(GeV^{2}); Events",20,0.8,2.8);
 
 
 
@@ -99,7 +98,7 @@ void func(TLorentzVector Pion, TLorentzVector Kaon1, TLorentzVector Kaon2)
 
 
 
-void KKp(){
+void cKKp(){
   B2HHH->Add("data/B2HHH_MagnetUp.root");                            B2HHH->Add("data/B2HHH_MagnetDown.root");
   B2HHH->SetBranchAddress("B_FlightDistance", &B_FlightDistance);    B2HHH->SetBranchAddress("B_VertexChi2", &B_VertexChi2);
   B2HHH->SetBranchAddress("H1_isMuon", &H1_isMuon);     B2HHH->SetBranchAddress("H2_isMuon", &H2_isMuon);     B2HHH->SetBranchAddress("H3_isMuon", &H3_isMuon);
